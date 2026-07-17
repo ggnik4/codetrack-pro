@@ -1,124 +1,173 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useState } from "react";
-import { useRegister } from "@/hooks/use-auth";
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
+import httpClient, { setAuthToken, handleApiError } from '@/lib/http-client'
+import { registerSchema, type RegisterInput } from '@/lib/schemas'
+import { useAuthStore } from '@/stores/auth'
+import { useNotification } from '@/stores/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({
-    email: "",
-    username: "",
-    full_name: "",
-    password: "",
-  });
-  const register = useRegister();
+  const router = useRouter()
+  const { setUser, setToken } = useAuthStore()
+  const notify = useNotification()
+  const [isLoading, setIsLoading] = useState(false)
 
-  function update(field: keyof typeof form) {
-    return (e: React.ChangeEvent<HTMLInputElement>) =>
-      setForm((f) => ({ ...f, [field]: e.target.value }));
-  }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterInput>({
+    resolver: zodResolver(registerSchema),
+  })
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    register.mutate(form);
-  }
+  const onSubmit = async (data: RegisterInput) => {
+    setIsLoading(true)
 
-  if (register.isSuccess) {
-    return (
-      <main className="flex min-h-screen items-center justify-center p-6">
-        <div className="w-full max-w-sm animate-fade-in rounded-lg border border-border bg-card p-8 text-center">
-          <h1 className="mb-2 text-xl font-semibold">Check your email</h1>
-          <p className="text-sm text-muted-foreground">
-            We sent a verification link to <strong>{form.email}</strong>. Click it to
-            activate your account, then log in.
-          </p>
-          <Link
-            href="/login"
-            className="mt-6 inline-block rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
-            Go to login
-          </Link>
-        </div>
-      </main>
-    );
+    try {
+      const response = await httpClient.post('/auth/register/', {
+        email: data.email,
+        password: data.password,
+        first_name: data.firstName,
+        last_name: data.lastName,
+      })
+
+      const { access, refresh, user } = response.data
+
+      setAuthToken(access, refresh)
+      setUser(user)
+      setToken(access)
+
+      notify.success('Account created successfully!')
+      router.push('/dashboard')
+    } catch (error) {
+      const apiError = handleApiError(error)
+      notify.error(apiError.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm animate-slide-up rounded-lg border border-border bg-card p-8">
-        <h1 className="mb-1 text-2xl font-semibold">Create your account</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Start tracking your competitive programming journey.
-        </p>
+    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md"
+      >
+        <Card className="border-border/50">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20 text-primary font-bold text-lg">
+                CT
+              </div>
+            </div>
+            <CardTitle className="text-2xl">Create account</CardTitle>
+            <CardDescription>Join CodeTrack Pro today</CardDescription>
+          </CardHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm">Full name</label>
-            <input
-              required
-              value={form.full_name}
-              onChange={update("full_name")}
-              className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-          </div>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* First name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">First name</label>
+                <Input
+                  {...register('firstName')}
+                  placeholder="John"
+                  disabled={isLoading}
+                />
+                {errors.firstName && (
+                  <p className="text-xs text-destructive">{errors.firstName.message}</p>
+                )}
+              </div>
 
-          <div>
-            <label className="mb-1 block text-sm">Username</label>
-            <input
-              required
-              pattern="[a-zA-Z0-9_-]+"
-              value={form.username}
-              onChange={update("username")}
-              className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-primary"
-              placeholder="your_handle"
-            />
-          </div>
+              {/* Last name */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Last name</label>
+                <Input
+                  {...register('lastName')}
+                  placeholder="Doe"
+                  disabled={isLoading}
+                />
+                {errors.lastName && (
+                  <p className="text-xs text-destructive">{errors.lastName.message}</p>
+                )}
+              </div>
 
-          <div>
-            <label className="mb-1 block text-sm">Email</label>
-            <input
-              type="email"
-              required
-              value={form.email}
-              onChange={update("email")}
-              className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-          </div>
+              {/* Email */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  {...register('email')}
+                  type="email"
+                  placeholder="you@example.com"
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email.message}</p>
+                )}
+              </div>
 
-          <div>
-            <label className="mb-1 block text-sm">Password</label>
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={form.password}
-              onChange={update("password")}
-              className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-primary"
-            />
-          </div>
+              {/* Password */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Password</label>
+                <Input
+                  {...register('password')}
+                  type="password"
+                  placeholder="••••••••"
+                  disabled={isLoading}
+                />
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password.message}</p>
+                )}
+              </div>
 
-          {register.isError && (
-            <p className="text-sm text-red-400">
-              Something went wrong. Check your details and try again.
-            </p>
-          )}
+              {/* Confirm password */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Confirm password</label>
+                <Input
+                  {...register('confirmPassword')}
+                  type="password"
+                  placeholder="••••••••"
+                  disabled={isLoading}
+                />
+                {errors.confirmPassword && (
+                  <p className="text-xs text-destructive">{errors.confirmPassword.message}</p>
+                )}
+              </div>
 
-          <button
-            type="submit"
-            disabled={register.isPending}
-            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {register.isPending ? "Creating account..." : "Create account"}
-          </button>
-        </form>
+              {/* Submit button */}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  'Create account'
+                )}
+              </Button>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
-          Already have an account?{" "}
-          <Link href="/login" className="text-primary hover:underline">
-            Log in
-          </Link>
-        </p>
-      </div>
-    </main>
-  );
+              {/* Sign in link */}
+              <p className="text-center text-sm text-muted-foreground">
+                Already have an account?{' '}
+                <Link href="/login" className="text-primary hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  )
 }

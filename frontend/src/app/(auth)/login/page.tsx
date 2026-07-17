@@ -1,76 +1,146 @@
-"use client";
+'use client'
 
-import Link from "next/link";
-import { useState } from "react";
-import { useLogin } from "@/hooks/use-auth";
+import React, { useState } from 'react'
+import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { motion } from 'framer-motion'
+import { Loader2 } from 'lucide-react'
+import httpClient, { setAuthToken, handleApiError } from '@/lib/http-client'
+import { loginSchema, type LoginInput } from '@/lib/schemas'
+import { useAuthStore } from '@/stores/auth'
+import { useNotification } from '@/stores/ui'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const login = useLogin();
+  const router = useRouter()
+  const { setUser, setToken } = useAuthStore()
+  const notify = useNotification()
+  const [isLoading, setIsLoading] = useState(false)
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    login.mutate({ email, password });
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+  })
+
+  const onSubmit = async (data: LoginInput) => {
+    setIsLoading(true)
+
+    try {
+      const response = await httpClient.post('/login/', data)
+      console.log("Response:", response.data)
+
+const { access, refresh, user } = response.data
+
+alert("Before saving")
+
+setAuthToken(access, refresh)
+
+alert("After saving")
+
+alert(localStorage.getItem("codetrack_auth_token"))
+
+setUser(user)
+setToken(access)
+
+notify.success("Login successful!")
+router.push("/dashboard")
+    } catch (error) {
+      const apiError = handleApiError(error)
+      notify.error(apiError.message)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-6">
-      <div className="w-full max-w-sm animate-slide-up rounded-lg border border-border bg-card p-8">
-        <h1 className="mb-1 text-2xl font-semibold">Welcome back</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          Log in to your CodeTrack Pro dashboard.
-        </p>
+    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="w-full max-w-md"
+      >
+        <Card className="border-border/50">
+          <CardHeader className="space-y-2 text-center">
+            <div className="flex justify-center mb-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-primary/20 text-primary font-bold text-lg">
+                CT
+              </div>
+            </div>
+            <CardTitle className="text-2xl">Welcome back</CardTitle>
+            <CardDescription>Sign in to your CodeTrack Pro account</CardDescription>
+          </CardHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="mb-1 block text-sm">Email</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-primary"
-              placeholder="you@example.com"
-            />
-          </div>
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {/* Email */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Email</label>
+                <Input
+                  {...register('email')}
+                  type="email"
+                  placeholder="you@example.com"
+                  disabled={isLoading}
+                />
+                {errors.email && (
+                  <p className="text-xs text-destructive">{errors.email.message}</p>
+                )}
+              </div>
 
-          <div>
-            <label className="mb-1 block text-sm">Password</label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:border-primary"
-              placeholder="••••••••"
-            />
-          </div>
+              {/* Password */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Password</label>
+                <Input
+                  {...register('password')}
+                  type="password"
+                  placeholder="••••••••"
+                  disabled={isLoading}
+                />
+                {errors.password && (
+                  <p className="text-xs text-destructive">{errors.password.message}</p>
+                )}
+              </div>
 
-          {login.isError && (
-            <p className="text-sm text-red-400">
-              Invalid email or password. Please try again.
-            </p>
-          )}
+              {/* Forgot password link */}
+              <div className="text-right">
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-primary hover:underline"
+                >
+                Forgot password?
+                </Link>
+              </div>
 
-          <button
-            type="submit"
-            disabled={login.isPending}
-            className="w-full rounded-md bg-primary py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {login.isPending ? "Logging in..." : "Log in"}
-          </button>
-        </form>
+              {/* Submit button */}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Signing in...
+                  </>
+                ) : (
+                  'Sign in'
+                )}
+              </Button>
 
-        <div className="mt-4 flex justify-between text-sm text-muted-foreground">
-          <Link href="/register" className="hover:text-foreground">
-            Create an account
-          </Link>
-          <Link href="/forgot-password" className="hover:text-foreground">
-            Forgot password?
-          </Link>
-        </div>
-      </div>
-    </main>
-  );
+              {/* Sign up link */}
+              <p className="text-center text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <Link href="/register" className="text-primary hover:underline">
+  Sign up
+</Link>
+              </p>
+            </form>
+          </CardContent>
+        </Card>
+      </motion.div>
+    </div>
+  )
 }

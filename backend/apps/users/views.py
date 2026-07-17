@@ -93,7 +93,7 @@ class RegisterView(generics.CreateAPIView):
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    """POST /api/v1/auth/login/ -- email+password login, returns access+refresh+user."""
+    """POST /api/v1/login/ -- email+password login, returns access+refresh+user."""
 
     serializer_class = CustomTokenObtainPairSerializer
     throttle_scope = "auth"
