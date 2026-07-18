@@ -147,6 +147,9 @@ export default function ProjectsPage() {
                               <Badge variant={project.visibility === 'PUBLIC' ? 'outline' : 'secondary'}>
                                 {project.visibility.toLowerCase()}
                               </Badge>
+                              <Badge variant="outline" className="text-xs">
+                                {project.status.toLowerCase().replace('_', ' ')}
+                              </Badge>
                             </div>
                             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                               {project.description}

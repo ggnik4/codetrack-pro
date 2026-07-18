@@ -21,6 +21,13 @@ class Project(models.Model):
         PRIVATE = "PRIVATE", "Private"
         PUBLIC = "PUBLIC", "Public"
 
+    class Status(models.TextChoices):
+        PLANNING = "PLANNING", "Planning"
+        IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        ON_HOLD = "ON_HOLD", "On Hold"
+        COMPLETED = "COMPLETED", "Completed"
+        ARCHIVED = "ARCHIVED", "Archived"
+
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,
@@ -48,6 +55,11 @@ class Project(models.Model):
         max_length=10,
         choices=Visibility.choices,
         default=Visibility.PRIVATE,
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PLANNING,
     )
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL,

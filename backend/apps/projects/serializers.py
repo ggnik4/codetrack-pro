@@ -21,6 +21,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             "description",
             "color",
             "visibility",
+            "status",
             "owner",
             "owner_username",
             "created_at",
@@ -34,7 +35,7 @@ class ProjectCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description", "color", "visibility"]
+        fields = ["name", "description", "color", "visibility", "status"]
 
     def validate_name(self, value: str) -> str:
         value = value.strip()
@@ -55,12 +56,13 @@ class ProjectUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Project
-        fields = ["name", "description", "color", "visibility"]
+        fields = ["name", "description", "color", "visibility", "status"]
         extra_kwargs = {
             "name": {"required": False},
             "description": {"required": False},
             "color": {"required": False},
             "visibility": {"required": False},
+            "status": {"required": False},
         }
 
     def validate_name(self, value: str) -> str:

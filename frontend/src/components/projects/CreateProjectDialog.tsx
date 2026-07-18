@@ -9,6 +9,7 @@ import { createProjectSchema } from '@/lib/schemas';
 
 const formSchema = createProjectSchema.extend({
   visibility: z.enum(['PRIVATE', 'PUBLIC']),
+  status: z.enum(['PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'ARCHIVED']),
 });
 
 export function CreateProjectDialog({ onSuccess }: { onSuccess: () => void }) {

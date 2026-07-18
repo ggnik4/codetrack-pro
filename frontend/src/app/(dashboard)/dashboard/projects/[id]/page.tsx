@@ -72,9 +72,14 @@ export default function ProjectDetailsPage() {
                 </div>
                 <div>
                     <h1 className="text-3xl font-bold">{project.name}</h1>
-                    <Badge variant={project.visibility === 'PUBLIC' ? 'outline' : 'secondary'} className="mt-2">
-                        {project.visibility.toLowerCase()}
-                    </Badge>
+                    <div className="flex gap-2 mt-2">
+                        <Badge variant={project.visibility === 'PUBLIC' ? 'outline' : 'secondary'}>
+                            {project.visibility.toLowerCase()}
+                        </Badge>
+                        <Badge variant="outline">
+                            {project.status.toLowerCase().replace('_', ' ')}
+                        </Badge>
+                    </div>
                 </div>
             </div>
             <p className="text-muted-foreground mt-4">{project.description}</p>

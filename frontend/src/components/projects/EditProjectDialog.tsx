@@ -8,6 +8,7 @@ import { createProjectSchema } from '@/lib/schemas';
 
 const formSchema = createProjectSchema.extend({
   visibility: z.enum(['PRIVATE', 'PUBLIC']),
+  status: z.enum(['PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'ARCHIVED']),
 });
 
 interface EditProjectDialogProps {
@@ -48,6 +49,7 @@ export function EditProjectDialog({ project, onSuccess }: EditProjectDialogProps
             name: project.name,
             description: project.description || '',
             visibility: (project.visibility.toUpperCase() as 'PRIVATE' | 'PUBLIC'),
+            status: (project.status.toUpperCase() as 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED'),
           }}
           onSubmit={onSubmit}
           isLoading={isLoading}

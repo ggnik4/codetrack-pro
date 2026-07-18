@@ -146,9 +146,9 @@ export default function ProfilePage() {
                       </div>
 
                       <div>
-                        <p className="text-sm font-medium text-muted-foreground">Role</p>
+                        <p className="text-sm font-medium text-muted-foreground">Account Status</p>
                         <div className="mt-1">
-                          <Badge>{user?.role}</Badge>
+                          <Badge>{user?.is_email_verified ? 'Verified' : 'Unverified'}</Badge>
                         </div>
                       </div>
                     </div>

@@ -1,6 +1,8 @@
 import httpClient from '@/lib/http-client';
 
 // Define your types based on your backend schema
+export type ProjectStatus = 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED';
+
 export interface Project {
   id: string;
   name: string;
@@ -8,6 +10,7 @@ export interface Project {
   description: string;
   color: string;
   visibility: 'PRIVATE' | 'PUBLIC';
+  status: ProjectStatus;
   owner: string;
   owner_username: string;
   created_at: string;
@@ -22,7 +25,7 @@ export interface PaginatedResponse<T> {
 }
 
 export type CreateProjectData = Pick<Project, 'name'> &
-  Partial<Pick<Project, 'description' | 'color' | 'visibility'>>;
+  Partial<Pick<Project, 'description' | 'color' | 'visibility' | 'status'>>;
 
 export type UpdateProjectData = Partial<CreateProjectData>;
 
@@ -32,6 +35,7 @@ export interface GetProjectsParams {
   search?: string;
   ordering?: string;
   visibility?: 'PRIVATE' | 'PUBLIC';
+  status?: ProjectStatus;
 }
 
 class ProjectService {

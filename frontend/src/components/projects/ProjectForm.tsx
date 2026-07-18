@@ -8,6 +8,7 @@ import { createProjectSchema } from '@/lib/schemas';
 
 const formSchema = createProjectSchema.extend({
   visibility: z.enum(['PRIVATE', 'PUBLIC']),
+  status: z.enum(['PLANNING', 'IN_PROGRESS', 'ON_HOLD', 'COMPLETED', 'ARCHIVED']),
 });
 
 interface ProjectFormProps {
@@ -15,6 +16,7 @@ interface ProjectFormProps {
     name: string;
     description?: string;
     visibility: 'PRIVATE' | 'PUBLIC';
+    status: 'PLANNING' | 'IN_PROGRESS' | 'ON_HOLD' | 'COMPLETED' | 'ARCHIVED';
   };
   onSubmit: (data: z.infer<typeof formSchema>) => Promise<void>;
   isLoading: boolean;
@@ -28,6 +30,7 @@ export function ProjectForm({ initialData, onSubmit, isLoading, submitLabel }: P
       name: '',
       description: '',
       visibility: 'PRIVATE',
+      status: 'PLANNING',
     },
   });
 
@@ -52,6 +55,17 @@ export function ProjectForm({ initialData, onSubmit, isLoading, submitLabel }: P
           <option value="PUBLIC">Public</option>
         </select>
         {errors.visibility && <p className="text-sm text-destructive">{errors.visibility.message}</p>}
+      </div>
+      <div>
+        <label className="text-sm font-medium">Status</label>
+        <select {...register('status')} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2">
+          <option value="PLANNING">Planning</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="ON_HOLD">On Hold</option>
+          <option value="COMPLETED">Completed</option>
+          <option value="ARCHIVED">Archived</option>
+        </select>
+        {errors.status && <p className="text-sm text-destructive">{errors.status.message}</p>}
       </div>
       <Button type="submit" disabled={isLoading}>
         {isLoading ? 'Saving...' : submitLabel}
