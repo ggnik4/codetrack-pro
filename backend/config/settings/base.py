@@ -59,6 +59,7 @@ LOCAL_APPS = [
     "apps.friends",
     "apps.notifications",
     "apps.hackathons",
+    "apps.projects",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -166,7 +167,7 @@ SPECTACULAR_SETTINGS = {
 # CORS
 # ---------------------------------------------------------------------------
 CORS_ALLOWED_ORIGINS = env.list(
-    "CORS_ALLOWED_ORIGINS", default=["http://localhost:3000"]
+    "CORS_ALLOWED_ORIGINS", default=["http://localhost:3001"]
 )
 CORS_ALLOW_CREDENTIALS = True
 

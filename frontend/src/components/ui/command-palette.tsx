@@ -11,11 +11,9 @@ import {
   Zap,
   Settings,
   User,
-  LogOut,
   X,
 } from 'lucide-react'
 import { useUIStore } from '@/stores/ui'
-import { useAuthStore } from '@/stores/auth'
 import { Input } from '@/components/ui/input'
 
 const commands = [
@@ -30,7 +28,6 @@ const commands = [
 export default function CommandPalette() {
   const router = useRouter()
   const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore()
-  const { logout } = useAuthStore()
   const [search, setSearch] = useState('')
   const [selectedIndex, setSelectedIndex] = useState(0)
 

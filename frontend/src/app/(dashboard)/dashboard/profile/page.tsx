@@ -4,7 +4,7 @@ import React, { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { motion } from 'framer-motion'
-import { User, Edit2, Save, X, Upload, Loader2 } from 'lucide-react'
+import { Edit2, Save, X, Upload, Loader2 } from 'lucide-react'
 import LayoutShell from '@/components/layout/layout-shell'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,7 +15,8 @@ import { useAuthStore } from '@/stores/auth'
 import { useNotification } from '@/stores/ui'
 
 export default function ProfilePage() {
-  const { user } = useAuthStore()
+// ... rest remains same
+  const { user, setUser } = useAuthStore()
   const notify = useNotification()
   const [isEditing, setIsEditing] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
@@ -28,8 +29,8 @@ export default function ProfilePage() {
   } = useForm<UpdateProfileInput>({
     resolver: zodResolver(updateProfileSchema),
     defaultValues: {
-      firstName: user?.firstName || '',
-      lastName: user?.lastName || '',
+      firstName: user?.full_name?.split(' ')[0] || '',
+      lastName: user?.full_name?.split(' ').slice(1).join(' ') || '',
       email: user?.email || '',
     },
   })
@@ -38,7 +39,17 @@ export default function ProfilePage() {
     setIsLoading(true)
 
     try {
+      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
+      
+      // Update the store with the new data
+      if (user) {
+        setUser({
+          ...user,
+          ...data,
+        })
+      }
+      
       notify.success('Profile updated successfully!')
       setIsEditing(false)
     } catch (error) {
@@ -103,8 +114,11 @@ export default function ProfilePage() {
                     transition={{ type: 'spring', stiffness: 200, damping: 20 }}
                     className="flex h-32 w-32 items-center justify-center rounded-full bg-primary/20 text-4xl font-bold text-primary"
                   >
-                    {user?.firstName.charAt(0)}
-                    {user?.lastName.charAt(0)}
+                    {(
+                      user?.full_name?.charAt(0) ||
+                      user?.username?.charAt(0) ||
+                      "U"
+                    ).toUpperCase()}
                   </motion.div>
 
                   {isEditing && (
@@ -122,7 +136,7 @@ export default function ProfilePage() {
                       <div>
                         <p className="text-sm font-medium text-muted-foreground">Full Name</p>
                         <p className="text-lg font-semibold mt-1">
-                          {user?.firstName} {user?.lastName}
+                          {user?.full_name?.trim() ? user.full_name : user?.username}
                         </p>
                       </div>
 

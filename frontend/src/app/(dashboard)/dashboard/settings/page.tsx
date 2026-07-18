@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Settings, Bell, Lock, Users, Palette, ChevronRight, ToggleRight, ToggleLeft } from 'lucide-react'
+import { Settings, Bell, Users, Palette, ChevronRight, ToggleRight, ToggleLeft } from 'lucide-react'
 import LayoutShell from '@/components/layout/layout-shell'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

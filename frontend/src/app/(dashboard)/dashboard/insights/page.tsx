@@ -2,13 +2,13 @@
 
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Zap, TrendingUp, AlertCircle, Lightbulb, Brain, RefreshCw, ArrowRight } from 'lucide-react'
+import { Zap, TrendingUp, AlertCircle, Lightbulb, Brain, ArrowRight } from 'lucide-react'
 import LayoutShell from '@/components/layout/layout-shell'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 
 const insights = [
+  
   {
     id: '1',
     type: 'warning',

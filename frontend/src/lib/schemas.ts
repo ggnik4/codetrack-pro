@@ -43,12 +43,14 @@ export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>
 export const userSchema = z.object({
   id: z.string(),
   email: z.string().email(),
-  firstName: z.string(),
-  lastName: z.string(),
-  avatar: z.string().url().optional(),
-  role: z.enum(['admin', 'user', 'viewer']),
-  createdAt: z.string().datetime(),
-  updatedAt: z.string().datetime(),
+  username: z.string(),
+  full_name: z.string().optional().nullable(),
+  avatar_url: z.string().url().optional().nullable(),
+  bio: z.string().optional().nullable(),
+  college_or_organization: z.string().optional().nullable(),
+  timezone: z.string(),
+  is_email_verified: z.boolean(),
+  date_joined: z.string().datetime().optional(),
 })
 
 export type User = z.infer<typeof userSchema>

@@ -1,9 +1,9 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { FolderOpen, Plus, Search, Filter, MoreHorizontal, Users, Calendar } from 'lucide-react'
+import { FolderOpen, Search, Filter, MoreHorizontal, Users, Calendar, Loader2 } from 'lucide-react'
 import LayoutShell from '@/components/layout/layout-shell'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -15,39 +15,43 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-const projects = [
-  {
-    id: '1',
-    name: 'CodeTrack Pro',
-    description: 'Main product - AI-powered developer platform',
-    color: '#60A5FA',
-    members: 5,
-    issues: 24,
-    visibility: 'private',
-  },
-  {
-    id: '2',
-    name: 'Mobile App',
-    description: 'React Native mobile application',
-    color: '#10B981',
-    members: 3,
-    issues: 12,
-    visibility: 'private',
-  },
-  {
-    id: '3',
-    name: 'Documentation',
-    description: 'API and user documentation',
-    color: '#F59E0B',
-    members: 2,
-    issues: 8,
-    visibility: 'public',
-  },
-]
+import { projectService, Project } from '@/services/projectService'
+import { CreateProjectDialog } from '@/components/projects/CreateProjectDialog'
+import { EditProjectDialog } from '@/components/projects/EditProjectDialog'
 
 export default function ProjectsPage() {
   const [searchTerm, setSearchTerm] = useState('')
+  const [projects, setProjects] = useState<Project[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const fetchProjects = useCallback(async () => {
+    setIsLoading(true)
+    try {
+      const response = await projectService.getProjects()
+      setProjects(response.results)
+    } catch (error) {
+      console.error("Failed to fetch projects:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchProjects()
+  }, [fetchProjects])
+
+  const handleDeleteProject = async (id: string) => {
+    if (confirm('Are you sure you want to delete this project?')) {
+      try {
+        await projectService.deleteProject(id)
+        fetchProjects()
+        alert('Project deleted successfully!')
+      } catch (error) {
+        console.error('Failed to delete project:', error)
+        alert('Failed to delete project. Please try again.')
+      }
+    }
+  }
 
   const filteredProjects = projects.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -67,10 +71,7 @@ export default function ProjectsPage() {
               <h1 className="text-3xl font-bold">Projects</h1>
               <p className="mt-1 text-muted-foreground">Manage and organize your projects</p>
             </div>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
+            <CreateProjectDialog onSuccess={fetchProjects} />
           </div>
         </motion.div>
 
@@ -96,80 +97,98 @@ export default function ProjectsPage() {
           </Button>
         </motion.div>
 
+        {/* Loading state */}
+        {isLoading && (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        )}
+
+        {/* Empty state */}
+        {!isLoading && projects.length === 0 && (
+          <div className="flex items-center justify-center py-24">
+            <p className="text-muted-foreground">No projects yet</p>
+          </div>
+        )}
+
         {/* Projects grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
-        >
-          {filteredProjects.map((project) => (
-            <motion.div
-              key={project.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-              whileHover={{ y: -4 }}
-            >
-              <Link href={`/dashboard/projects/${project.id}`}>
-                <Card className="border-border/50 cursor-pointer transition-all hover:shadow-md">
-                  <CardContent className="pt-6">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-4 flex-1">
-                        <div
-                          className="rounded-lg p-3"
-                          style={{ backgroundColor: project.color + '20' }}
-                        >
-                          <FolderOpen
-                            className="h-6 w-6"
-                            style={{ color: project.color }}
-                          />
-                        </div>
-
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-semibold text-lg">{project.name}</h3>
-                            <Badge variant={project.visibility === 'public' ? 'outline' : 'secondary'}>
-                              {project.visibility}
-                            </Badge>
+        {!isLoading && projects.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="grid gap-4 md:grid-cols-2 lg:grid-cols-3"
+          >
+            {filteredProjects.map((project) => (
+              <motion.div
+                key={project.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                whileHover={{ y: -4 }}
+              >
+                  <Card className="border-border/50 transition-all hover:shadow-md">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start justify-between">
+                        <Link href={`/dashboard/projects/${project.id}`} className="flex items-start gap-4 flex-1">
+                          <div
+                            className="rounded-lg p-3"
+                            style={{ backgroundColor: project.color + '20' }}
+                          >
+                            <FolderOpen
+                              className="h-6 w-6"
+                              style={{ color: project.color }}
+                            />
                           </div>
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
-                            {project.description}
-                          </p>
 
-                          <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <Users className="h-4 w-4" />
-                              <span>{project.members} members</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <h3 className="font-semibold text-lg">{project.name}</h3>
+                              <Badge variant={project.visibility === 'PUBLIC' ? 'outline' : 'secondary'}>
+                                {project.visibility.toLowerCase()}
+                              </Badge>
                             </div>
-                            <div className="flex items-center gap-1">
-                              <span>{project.issues} issues</span>
+                            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                              {project.description}
+                            </p>
+
+                            <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
+                              <div className="flex items-center gap-1">
+                                <Users className="h-4 w-4" />
+                                <span>{project.owner_username}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Calendar className="h-4 w-4" />
+                                <span>{new Date(project.created_at).toLocaleDateString()}</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        </Link>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+
+                          <DropdownMenuContent align="end">
+                            <EditProjectDialog project={project} onSuccess={fetchProjects} />
+                            <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => handleDeleteProject(project.id)}
+                            >
+                                Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
-
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild onClick={(e) => e.preventDefault()}>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem>Edit project</DropdownMenuItem>
-                          <DropdownMenuItem>Manage members</DropdownMenuItem>
-                          <DropdownMenuItem>Settings</DropdownMenuItem>
-                          <DropdownMenuItem className="text-destructive">Delete</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            </motion.div>
-          ))}
-        </motion.div>
+                    </CardContent>
+                  </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </LayoutShell>
   )

@@ -17,6 +17,7 @@ api_v1_patterns = [
     path("friends/", include("apps.friends.urls")),
     path("notifications/", include("apps.notifications.urls")),
     path("hackathons/", include("apps.hackathons.urls")),
+    path("projects/", include("apps.projects.urls")),
 ]
 
 urlpatterns = [

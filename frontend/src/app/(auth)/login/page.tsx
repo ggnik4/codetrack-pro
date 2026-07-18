@@ -33,8 +33,9 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const response = await httpClient.post('/login/', data)
+      const response = await httpClient.post('/auth/login/', data)
       console.log("Response:", response.data)
+      console.log("User:", response.data.user)
 
 const { access, refresh, user } = response.data
 

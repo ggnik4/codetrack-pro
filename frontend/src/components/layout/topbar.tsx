@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import {
   Search,
@@ -27,7 +27,7 @@ export default function Topbar() {
   const { theme, setTheme } = useTheme()
   const { setCommandPaletteOpen } = useUIStore()
   const { user, logout } = useAuthStore()
-  const [searchOpen, setSearchOpen] = useState(false)
+// ... rest remains same
 
   return (
     <motion.header
@@ -44,8 +44,6 @@ export default function Topbar() {
             <Input
               placeholder="Search..."
               className="pl-10 pr-4"
-              onFocus={() => setSearchOpen(true)}
-              onBlur={() => setSearchOpen(false)}
             />
           </div>
         </div>
@@ -87,15 +85,18 @@ export default function Topbar() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary text-xs font-bold">
-                  {user?.firstName.charAt(0)}
-                  {user?.lastName.charAt(0)}
+                  {user?.full_name?.charAt(0).toUpperCase() ||
+  user?.username?.charAt(0).toUpperCase() ||
+  "U"}
                 </div>
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-1.5">
-                <p className="text-sm font-semibold">{user?.firstName} {user?.lastName}</p>
+                <p className="text-sm font-semibold">
+  {user?.full_name || user?.username}
+</p>
                 <p className="text-xs text-muted-foreground">{user?.email}</p>
               </div>
 

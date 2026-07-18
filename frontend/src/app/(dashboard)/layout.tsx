@@ -10,19 +10,19 @@ export default function DashboardLayout({
   children: ReactNode
 }) {
   const router = useRouter()
-  const { isAuthenticated, hydrate } = useAuthStore()
+  const { isAuthenticated, hydrate, hasHydrated } = useAuthStore()
 
   useEffect(() => {
     hydrate()
   }, [hydrate])
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated) {
       router.replace('/login')
     }
-  }, [isAuthenticated, router])
+  }, [isAuthenticated, router, hasHydrated])
 
-  if (!isAuthenticated) {
+  if (!hasHydrated || !isAuthenticated) {
     return null
   }
 

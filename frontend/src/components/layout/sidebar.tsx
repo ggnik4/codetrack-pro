@@ -12,7 +12,6 @@ import {
   Settings,
   User,
   LogOut,
-  ChevronLeft,
   Menu,
 } from 'lucide-react'
 import { useUIStore } from '@/stores/ui'
@@ -131,12 +130,11 @@ export default function Sidebar() {
             <div className="border-t border-sidebar-border p-4">
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-sidebar-primary text-sidebar-primary-foreground text-xs font-bold">
-                  {user.firstName.charAt(0)}
-                  {user.lastName.charAt(0)}
+                  {user?.full_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-xs font-semibold text-sidebar-foreground truncate">
-                    {user.firstName} {user.lastName}
+                  {user.full_name || user.username}
                   </p>
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                 </div>
