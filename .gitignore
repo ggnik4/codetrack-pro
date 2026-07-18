@@ -24,3 +24,12 @@ frontend/out/
 
 # Docker
 *.pid
+# Node
+node_modules/
+**/node_modules/
+
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/tsconfig.tsbuildinfo
+backend/celerybeat-schedule
